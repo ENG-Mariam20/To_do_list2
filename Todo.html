@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>To-Do Dashboard — To-Do Pro</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+/* ===== Reset & font ===== */
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family: "Inter", "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  background: linear-gradient(180deg,#ffeaea82 0%, #fff 40%);
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+
+/* ===== NAVBAR ===== */
+.navbar{
+  width:100%;
+  padding:18px 32px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  background: #748DAE;
+  color:#fff;
+  border-bottom: 1px solid rgba(36,49,58,0.06);
+  position:sticky;
+  top:0;
+  backdrop-filter: blur(6px);
+  z-index:50;
+  box-shadow: 0 4px 18px rgba(36,49,58,0.04);
+}
+
+.nav-left{display:flex;align-items:center;gap:16px}
+.brand{
+  font-weight:700;
+  font-size:25px;
+}
+.greeting{
+  font-size:20px;
+  opacity:0.95;
+}
+
+.logout-btn{
+  padding:8px 14px;
+  background:#fff;
+  border:1px solid rgba(91,107,118,0.12);
+  border-radius:10px;
+  cursor:pointer;
+  font-weight:600;
+  color:#6b7b83;
+  transition: all .22s ease;
+}
+.logout-btn:hover{
+  transform:translateY(-3px);
+  box-shadow: 0 10px 30px rgba(99,113,123,0.08);
+}
+
+/* ===== CONTAINER ===== */
+.container{
+    width: 100%;
+    max-width: 1100px;
+  margin:100px auto;
+  padding:5px;
+}
+
+/* ===== New Panel Layout (no cards) ===== */
+.panel{
+  display:grid;
+  grid-template-columns: 1fr 300px;
+  gap:100px;
+  align-items:start;
+}
+
+/* LEFT column */
+.left { width: 100%;min-height:300px; margin-right: 80px;}
+
+/* Add area */
+.add-area{
+  display:flex;
+  gap:12px;
+  align-items:center;
+  margin-bottom:35px;
+}
+
+.input{ flex:1; display:flex; gap:8px; align-items:center; }
+
+.input input{
+  width:100%;
+  padding:12px 14px;
+  border-radius:12px;
+  border: 1px solid rgba(36,49,58,0.06);
+  background: #fff;
+  outline:none;
+  font-size:15px;
+  transition: box-shadow .2s ease, transform .15s ease;
+}
+.input input:focus{
+  box-shadow: 0 6px 18px rgba(92,111,131,0.06);
+  transform: translateY(-2px);
+}
+
+/* pastel button */
+.add-btn{
+  background: linear-gradient(180deg,#ffd8e8,#ffeef8);
+  border:none;
+  padding:10px 35px;
+  border-radius:12px;
+  font-weight:700;
+  color:#7d3b6f;
+  cursor:pointer;
+  box-shadow: 0 8px 22px rgba(125,59,111,0.08);
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.add-btn:hover{
+  transform: translateY(-5px);
+  box-shadow: 0 18px 40px rgba(125,59,111,0.12);
+}
+
+/* Utility row */
+.row{
+  display:flex;
+  gap:12px;
+  align-items:center;
+  margin-bottom:14px;
+  flex-wrap:wrap;
+}
+.count{ color:#6b7b83;font-weight:600; }
+
+/* Search */
+.search{ display:flex; gap:10px; align-items:center; }
+.search input{
+  padding:10px 12px;
+  border-radius:10px;
+  border:1px solid rgba(36,49,58,0.06);
+  background:#fff;
+  outline:none;
+  width:260px;
+}
+
+/* Filters */
+.filters{ display:flex; gap:8px; }
+.filter-btn{
+  padding:8px 12px;border-radius:10px;border:none;background:#f7fbff;color:#5b6b7a; cursor:pointer;
+  transition: .18s; font-weight:600;
+}
+.filter-btn.active{
+  background: linear-gradient(180deg,#eaf7ff,#d7f0ff);
+  color:#2e6b95;
+  box-shadow: 0 8px 20px rgba(46,107,149,0.06);
+}
+
+/* Task list */
+.tasks{
+  margin-top:8px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+/* Task item */
+.task{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:12px 16px;
+  border-radius:12px;
+  background:#ffffff;
+  border:1px solid rgba(36,49,58,0.04);
+  transition: transform .15s ease, box-shadow .18s ease;
+}
+.task:hover{
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px rgba(64,84,100,0.06);
+}
+
+.task .left-block{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex:1;
+}
+
+.checkbox{
+  width:20px;height:20px;
+  border-radius:6px;
+  border:1px solid rgba(36,49,58,0.08);
+  display:inline-grid;
+  place-items:center;
+  cursor:pointer;
+  transition:.2s;
+}
+.checkbox.checked{
+  background: linear-gradient(180deg,#cfece4,#dff7ed);
+  border-color: rgba(46,139,99,0.2);
+}
+
+.task-title{ font-weight:600; color:#24313a; }
+.task-title.completed{
+  text-decoration: line-through;
+  color:#9aa6ad;
+}
+
+/* actions */
+.actions{ display:flex; gap:8px; align-items:center; }
+.icon-btn{
+  background: transparent;
+  border:none;
+  cursor:pointer;
+  padding:15px 30px;
+  border-radius:8px;
+  color:#2e6b95;
+  transition:.18s;
+  font-size: 16px;
+}
+.icon-btn:hover{
+  transform: translateY(-3px);
+}
+
+/* ===== Right column (NO CARDS) ===== */
+.right{
+    width: 100%;
+  display:flex;
+  flex-direction:column;
+  gap:32px;
+  margin-left: 80px;
+  padding-top:10px;
+}
+
+/* Section titles */
+.right h3{
+  font-size:18px;
+  font-weight:700;
+  color:#5b6b76;
+  margin-bottom:8px;
+}
+
+/* Summary text */
+.summary-box{
+  font-size:16px;
+  color:#41505a;
+  font-weight:600;
+}
+
+/* Tips section */
+.tips-list{
+  list-style:disc;
+  padding-left:18px;
+  color:#6b7b83;
+  line-height:1.8;
+}
+
+/* empty state */
+.empty{
+  text-align:center;
+  color:#8e9aa0;
+  padding:40px;
+  border-radius:10px;
+  background:linear-gradient(180deg,#fbfbff,#fff);
+}
+
+/* responsive */
+@media (max-width:900px){
+  .panel{ grid-template-columns: 1fr; }
+  .right{ order:1 }
+  .left{ order:2 }
+  .search input{ width:160px; }
+}
+
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<header class="navbar">
+  <div class="nav-left">
+    <div class="brand">To-Do <span style="color:#F5CBCB">Pro</span></div>
+    <div class="greeting" id="greeting">Hello, User</div>
+  </div>
+  <div>
+    <button class="logout-btn" id="logoutBtn">Logout</button>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main class="container">
+  <section class="panel" aria-labelledby="main-heading">
+
+    <!-- LEFT: tasks -->
+    <div class="left">
+      <div class="add-area">
+        <div class="input">
+          <input id="taskInput" placeholder="Add a new task (max 100 chars)" maxlength="100" />
+        </div>
+        <button id="addBtn" class="add-btn">Add</button>
+      </div>
+
+      <div class="row">
+        <div class="count" id="taskCount">0 tasks</div>
+        <div class="search" style="margin-left:auto">
+          <input id="searchInput" placeholder="Search tasks..." />
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="filters" role="tablist" aria-label="Task filters">
+          <button class="filter-btn active" data-filter="all">All</button>
+          <button class="filter-btn" data-filter="active">Active</button>
+          <button class="filter-btn" data-filter="completed">Completed</button>
+        </div>
+      </div>
+
+      <div class="tasks" id="tasksList" aria-live="polite"></div>
+    </div>
+
+    <!-- RIGHT: summary / tips -->
+    <aside class="right">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-size:13px;color:#72838a">Tasks summary</div>
+            <div style="font-weight:700;font-size:20px" id="summaryCounts">0 total • 0 done</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="font-weight:700;margin-bottom:8px">Quick tips</div>
+        <ul style="color:#6b7b83;line-height:1.6">
+          <li>Use descriptive titles — short & clear.</li>
+          <li>Press <strong>Enter</strong> to add quickly.</li>
+          <li>Completed tasks are saved automatically.</li>
+        </ul>
+      </div>
+
+      
+    </aside>
+
+  </section>
+</main>
+
+<script>
+/* ====== To-Do Dashboard JS (localStorage per user) ====== */
+
+/* Helpers */
+const $ = id => document.getElementById(id);
+const qs = sel => document.querySelector(sel);
+
+let currentUser = localStorage.getItem("currentUser"); // must be set by login
+if(!currentUser){
+  // no user -> go to login
+  alert("No logged user. Redirecting to Login.");
+  window.location.href = "login.html";
+}
+let username = currentUser.split("@")[0]; // show name before @
+$("greeting").innerText = `Hello, ${username}`;
+
+/* task storage key per user */
+const TASK_KEY = `tasks_${currentUser}`;
+
+/* DOM elements */
+const taskInput = $("taskInput");
+const addBtn = $("addBtn");
+const tasksList = $("tasksList");
+const taskCount = $("taskCount");
+const searchInput = $("searchInput");
+const filterBtns = document.querySelectorAll(".filter-btn");
+const summaryCounts = $("summaryCounts");
+const logoutBtn = $("logoutBtn");
+
+/* Load tasks */
+let tasks = JSON.parse(localStorage.getItem(TASK_KEY)) || [];
+
+/* Render tasks based on search + filter */
+let activeFilter = "all";
+let currentSearch = "";
+
+function saveTasks(){ localStorage.setItem(TASK_KEY, JSON.stringify(tasks)); }
+
+function render(){
+  // apply search + filter
+  const filtered = tasks.filter(t => {
+    if(activeFilter === "active" && t.completed) return false;
+    if(activeFilter === "completed" && !t.completed) return false;
+    if(currentSearch){
+      return t.text.toLowerCase().includes(currentSearch.toLowerCase());
+    }
+    return true;
+  });
+
+  tasksList.innerHTML = "";
+  if(filtered.length === 0){
+    tasksList.innerHTML = `<div class="empty">No tasks found — try adding one ✨</div>`;
+  } else {
+    filtered.forEach(t => {
+      const div = document.createElement("div");
+      div.className = "task";
+      div.dataset.id = t.id;
+
+      div.innerHTML = `
+        <div class="left-block">
+          <div class="checkbox ${t.completed? 'checked':''}" data-action="toggle"></div>
+          <div>
+            <div class="task-title ${t.completed? 'completed':''}">${escapeHtml(t.text)}</div>
+            <div style="font-size:12px;color:#8f9aa0;margin-top:6px">${t.createdAt}</div>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="icon-btn" data-action="edit" title="Edit" style=" "><i class="fas fa-edit"></i> </button>
+          <button class="icon-btn" data-action="delete" title="Delete"><i class="fas fa-trash"></i></button>
+        </div>
+      `;
+      // add event listeners
+      const checkbox = div.querySelector('[data-action="toggle"]');
+      checkbox.addEventListener("click", ()=> toggleComplete(t.id));
+
+      const editBtn = div.querySelector('[data-action="edit"]');
+      editBtn.addEventListener("click", ()=> startEdit(t.id));
+
+      const delBtn = div.querySelector('[data-action="delete"]');
+      delBtn.addEventListener("click", ()=> deleteTask(t.id));
+
+      tasksList.appendChild(div);
+    });
+  }
+
+  // update counts
+  const total = tasks.length;
+  const done = tasks.filter(x=>x.completed).length;
+  taskCount.innerText = `${filtered.length} shown • ${total} total`;
+  summaryCounts.innerText = `${total} total • ${done} done`;
+}
+
+/* Escape HTML to prevent injection */
+function escapeHtml(str){
+  return str.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+}
+
+/* Add task */
+function addTask(){
+  const text = taskInput.value.trim();
+  if(text === ""){
+    alert("Task cannot be empty");
+    return;
+  }
+  if(text.length > 100){
+    alert("Task name must be less than 100 characters");
+    return;
+  }
+  // duplicate check (case-insensitive)
+  if(tasks.some(t => t.text.toLowerCase() === text.toLowerCase())){
+    alert("This task already exists");
+    return;
+  }
+  const newTask = {
+    id: Date.now().toString(),
+    text: text,
+    completed: false,
+    createdAt: new Date().toLocaleString()
+  };
+  tasks.unshift(newTask); // newest first
+  saveTasks();
+  render();
+  taskInput.value = "";
+}
+
+/* Toggle complete */
+function toggleComplete(id){
+  const t = tasks.find(x=>x.id===id);
+  if(!t) return;
+  t.completed = !t.completed;
+  saveTasks();
+  render();
+}
+
+/* Delete */
+function deleteTask(id){
+  if(!confirm("Delete this task?")) return;
+  tasks = tasks.filter(x=>x.id!==id);
+  saveTasks();
+  render();
+}
+
+/* Edit flow */
+function startEdit(id){
+  const t = tasks.find(x=>x.id===id);
+  if(!t) return;
+  // prompt simple inline edit (keeps UI simple for tests)
+  const newText = prompt("Edit task", t.text);
+  if(newText === null) return; // cancel
+  const trimmed = newText.trim();
+  if(trimmed === ""){
+    alert("Task cannot be empty");
+    return;
+  }
+  if(trimmed.length > 100){
+    alert("Task name must be less than 100 characters");
+    return;
+  }
+  // duplicate check ignoring this task
+  if(tasks.some(x=> x.id !== id && x.text.toLowerCase() === trimmed.toLowerCase())){
+    alert("This task already exists");
+    return;
+  }
+  t.text = trimmed;
+  saveTasks();
+  render();
+}
+
+/* Search */
+searchInput.addEventListener("input", (e)=>{
+  currentSearch = e.target.value;
+  render();
+});
+
+/* Filter buttons */
+filterBtns.forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    filterBtns.forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    activeFilter = btn.dataset.filter;
+    render();
+  });
+});
+
+/* Add button + Enter key */
+addBtn.addEventListener("click", addTask);
+taskInput.addEventListener("keydown", (e)=>{
+  if(e.key === "Enter"){ addTask(); }
+});
+
+/* Logout */
+logoutBtn.addEventListener("click", ()=>{
+  localStorage.removeItem("currentUser");
+  window.location.href = "login.html";
+});
+
+/* Utility: initial render */
+render();
+
+/* Extra: keyboard focus on load */
+taskInput.focus();
+
+</script>
+</body>
+</html>
